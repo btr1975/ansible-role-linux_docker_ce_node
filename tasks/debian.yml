@@ -1,0 +1,82 @@
+--- # Debian Install
+
+-   name: Install apt-transport-https Debian
+    apt:
+        name: apt-transport-https
+        state: present
+        update_cache: yes
+
+-   name: Install ca-certificates Debian
+    apt:
+        name: ca-certificates
+        state: present
+
+-   name: Install curl Debian
+    apt:
+        name: curl    
+        state: present
+
+-   name: Install software-properties-common Debian
+    apt:
+        name: software-properties-common
+        state: present
+
+-   name: Add an apt signing key for Docker repo Debian
+    apt_key:
+        id: 0EBFCD88
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+-   name: Add apt Docker repo Debian
+    apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release|lower }} stable"
+        state: present
+
+-   name: Install Docker CE Debian
+    apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+
+-   name: Install docker-compose Debian
+    apt:
+        name: docker-compose
+        state: present
+
+-   name: Install python-pip Debian
+    apt:
+        name: python-pip
+        state: present
+
+-   name: Upgrade pip Debian
+    pip:
+        name: pip
+        state: latest
+
+-   name: Upgrade docker-compose Debian
+    pip:
+        name: docker-compose
+        state: latest
+
+-   name: Remove docker-py Debian
+    pip:
+        name: docker-py
+        state: absent
+
+-   name: Check version docker suporting python files that are old Debian
+    shell: "pip freeze | grep docker==2.7.0"
+    register: old_docker_module
+    changed_when: old_docker_module.rc >= 1
+    ignore_errors: yes
+
+-   name: Remove docker suporting python files they are old Debian
+    pip:
+        name: docker
+        state: absent
+    when: old_docker_module.rc >= 1
+
+-   name: Install docker suporting python files Debian
+    pip:
+        name: docker
+        state: present
+    when: old_docker_module.rc >= 1

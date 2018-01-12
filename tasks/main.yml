@@ -1,0 +1,14 @@
+--- # tasks file for linux_docker_ce_node
+
+-   import_tasks: ./redhat.yml
+    when: ansible_os_family|lower == "redhat"
+
+-   import_tasks: ./debian.yml   
+    when: ansible_os_family|lower == "debian"
+
+-   name: Add users to docker group
+    user:
+        name: "{{ item }}"
+        groups: docker
+        append: yes
+    with_items: "{{ users }}"

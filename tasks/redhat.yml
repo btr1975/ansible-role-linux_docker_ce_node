@@ -1,0 +1,89 @@
+--- # RedHat Install
+
+-   name: Install epel-release and updae cache RedHat
+    yum:
+        name: epel-release
+        state: present
+        update_cache: yes
+
+-   name: Install yum-utils RedHat
+    yum:
+        name: yum-utils
+        state: present
+        update_cache: yes
+
+-   name: Install device-mapper-persistent-data RedHat
+    yum:
+        name: device-mapper-persistent-data
+        state: present
+
+-   name: Install lvm2 RedHat
+    yum:
+        name: lvm2
+        state: present
+
+-   name: Add GPG key for Docker CE RedHat
+    rpm_key:
+        key: "https://download.docker.com/linux/centos/gpg"
+        state: present
+        validate_certs: yes
+
+-   name: Check for YUM repo RedHat
+    shell: yum repolist | grep docker-ce
+    register: docker_ce_repo_exists
+    changed_when: docker_ce_repo_exists.rc >= 1
+    ignore_errors: yes
+
+-   name: Add Docker-ce repo
+    shell: "yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo"
+    when: docker_ce_repo_exists.rc >= 1
+
+-   name: Install Docker CE RedHat
+    yum:
+        name: docker-ce                
+        state: present
+        update_cache: yes
+
+-   name: Install PIP for Python RedHat
+    yum:
+        name: python-pip
+        state: present
+
+-   name: Check if Docker Service is running RedHat
+    shell: systemctl | grep docker.service
+    register: docker_service_running
+    changed_when: docker_service_running.rc >= 1
+    ignore_errors: yes
+
+-   name: Start Docker RedHat
+    shell: systemctl start docker
+    when: docker_service_running.rc >= 1
+
+-   name: Enable Docker as a Daemon RedHat
+    shell: systemctl enable docker
+    when: docker_service_running.rc >= 1
+
+-   name: Upgrade PIP RedHat
+    pip:
+        name: pip
+        state: latest
+
+-   name: Upgrade docker-compose RedHat
+    pip:
+        name: docker-compose
+        state: latest
+
+-   name: Fix Docker info warnings 1 RedHat
+    sysctl:
+        name: net.bridge.bridge-nf-call-iptables
+        value: 1
+
+-   name: Fix Docker info warnings 2 RedHat
+    sysctl:
+        name: net.bridge.bridge-nf-call-ip6tables
+        value: 1
+
+-   name: Create Docker Group RedHat
+    group:
+        name: docker
+        state: present
